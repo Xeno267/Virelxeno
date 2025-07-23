@@ -1,106 +1,61 @@
+-- VLib (simplified version)
 local VLib = {}
 
-function VLib:Window(text)
-    local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
-    local Main = Instance.new("Frame", ScreenGui)
-    Main.Size = UDim2.new(0, 450, 0, 310)
-    Main.Position = UDim2.new(0.5, -225, 0.5, -155)
-    Main.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    Main.BorderSizePixel = 0
-    Main.Name = "VirelXenoHub"
+function VLib:Window(name, color, keybind)
+    local gui = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"))
+    gui.Name = name:gsub(" ", "")
+    -- Basic frame
+    local frame = Instance.new("Frame", gui)
+    frame.Size = UDim2.new(0, 400, 0, 300)
+    frame.Position = UDim2.new(0.5, -200, 0.5, -150)
+    frame.BackgroundColor3 = color or Color3.fromRGB(30, 30, 30)
+    frame.Name = "MainFrame"
+    frame.Active = true
+    frame.Draggable = true
 
-    local UICorner = Instance.new("UICorner", Main)
-    UICorner.CornerRadius = UDim.new(0, 12)
+    -- Title
+    local title = Instance.new("TextLabel", frame)
+    title.Size = UDim2.new(1, 0, 0, 40)
+    title.Text = name
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    title.Font = Enum.Font.SourceSansBold
+    title.TextSize = 20
 
-    local Title = Instance.new("TextLabel", Main)
-    Title.Size = UDim2.new(1, 0, 0, 35)
-    Title.Text = text
-    Title.TextColor3 = Color3.fromRGB(0, 255, 127)
-    Title.BackgroundTransparency = 1
-    Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 22
+    -- Keybind toggler
+    local open = true
+    game:GetService("UserInputService").InputBegan:Connect(function(input)
+        if input.KeyCode == keybind then
+            open = not open
+            frame.Visible = open
+        end
+    end)
 
-    local Tabs = {}
-    function Tabs:Tab(tabText)
-        local TabButton = Instance.new("TextButton", Main)
-        TabButton.Size = UDim2.new(0, 100, 0, 25)
-        TabButton.Position = UDim2.new(0, #Main:GetChildren() * 105 - 500, 0, 40)
-        TabButton.Text = tabText
-        TabButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        TabButton.Font = Enum.Font.Gotham
-        TabButton.TextSize = 14
-        TabButton.BorderSizePixel = 0
-
-        local UICorner = Instance.new("UICorner", TabButton)
-        UICorner.CornerRadius = UDim.new(0, 6)
-
-        local TabFrame = Instance.new("Frame", Main)
-        TabFrame.Size = UDim2.new(1, -20, 1, -80)
-        TabFrame.Position = UDim2.new(0, 10, 0, 70)
-        TabFrame.BackgroundTransparency = 1
-        TabFrame.Visible = false
-
-        local function ClearTabs()
-            for _, v in pairs(Main:GetChildren()) do
-                if v:IsA("Frame") and v ~= Main and v ~= Title then
-                    v.Visible = false
+    return {
+        Tab = function(_, tabName)
+            local tabLabel = Instance.new("TextLabel", frame)
+            tabLabel.Text = tabName
+            tabLabel.Position = UDim2.new(0, 10, 0, 50 + math.random(0,100)) -- Random position to simulate multiple tabs
+            tabLabel.TextColor3 = Color3.new(1,1,1)
+            tabLabel.BackgroundTransparency = 1
+            tabLabel.Size = UDim2.new(0, 200, 0, 30)
+            return {
+                Toggle = function(_, txt, default, callback)
+                    local btn = Instance.new("TextButton", frame)
+                    btn.Text = txt
+                    btn.Size = UDim2.new(0, 120, 0, 30)
+                    btn.Position = UDim2.new(0, 10, 0, 150 + math.random(0, 100))
+                    btn.BackgroundColor3 = default and Color3.fromRGB(0,255,0) or Color3.fromRGB(100,100,100)
+                    local state = default
+                    btn.MouseButton1Click:Connect(function()
+                        state = not state
+                        btn.BackgroundColor3 = state and Color3.fromRGB(0,255,0) or Color3.fromRGB(100,100,100)
+                        callback(state)
+                    end)
                 end
-            end
+            }
         end
-
-        TabButton.MouseButton1Click:Connect(function()
-            ClearTabs()
-            TabFrame.Visible = true
-        end)
-
-        local Elements = {}
-
-        function Elements:Button(text, callback)
-            local Btn = Instance.new("TextButton", TabFrame)
-            Btn.Size = UDim2.new(0, 200, 0, 30)
-            Btn.Position = UDim2.new(0, 10, 0, #TabFrame:GetChildren() * 35)
-            Btn.Text = text
-            Btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-            Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            Btn.Font = Enum.Font.Gotham
-            Btn.TextSize = 14
-            Btn.BorderSizePixel = 0
-
-            local UICorner = Instance.new("UICorner", Btn)
-            UICorner.CornerRadius = UDim.new(0, 6)
-
-            Btn.MouseButton1Click:Connect(callback)
-        end
-
-        function Elements:Toggle(text, default, callback)
-            local ToggleBtn = Instance.new("TextButton", TabFrame)
-            ToggleBtn.Size = UDim2.new(0, 200, 0, 30)
-            ToggleBtn.Position = UDim2.new(0, 10, 0, #TabFrame:GetChildren() * 35)
-            ToggleBtn.Text = text
-            ToggleBtn.BackgroundColor3 = default and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 80)
-            ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-            ToggleBtn.Font = Enum.Font.Gotham
-            ToggleBtn.TextSize = 14
-            ToggleBtn.BorderSizePixel = 0
-
-            local UICorner = Instance.new("UICorner", ToggleBtn)
-            UICorner.CornerRadius = UDim.new(0, 6)
-
-            local toggled = default
-
-            ToggleBtn.MouseButton1Click:Connect(function()
-                toggled = not toggled
-                ToggleBtn.BackgroundColor3 = toggled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 80)
-                callback(toggled)
-            end)
-        end
-
-        TabFrame.Visible = #Main:GetChildren() <= 6 -- Show first tab by default
-        return Elements
-    end
-
-    return Tabs
+    }
 end
 
 return VLib
